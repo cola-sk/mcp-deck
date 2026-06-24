@@ -777,14 +777,7 @@ function App() {
         ) : (
         <form className="editor" onSubmit={saveServer}>
           <div className="editor-head">
-            <div>
-              <p>{selected ? "Editing server" : "New server"}</p>
-              <h2>{form.name || "Untitled MCP"}</h2>
-            </div>
-            <div className="editor-actions">
-              <span className="save-destination">
-                Save source, then sync checked targets
-              </span>
+            <div className="editor-title">
               <button
                 className="ghost"
                 onClick={showOverview}
@@ -793,6 +786,15 @@ function App() {
               >
                 <House size={16} />
               </button>
+              <div>
+                <p>{selected ? "Editing server" : "New server"}</p>
+                <h2>{form.name || "Untitled MCP"}</h2>
+              </div>
+            </div>
+            <div className="editor-actions">
+              <span className="save-destination">
+                Save source, then sync checked targets
+              </span>
               <button
                 className="ghost"
                 onClick={() => setShowSecrets((value) => !value)}
@@ -907,12 +909,18 @@ function App() {
                   <label key={client.id}>
                     <input
                       checked={form.targets[client.id]}
-                      onChange={(event) =>
+                      onChange={(event) => {
+                        const checked = event.target.checked;
+                        const isCcAgent = client.id === "claude" || client.id === "codex";
                         setForm({
                           ...form,
-                          targets: { ...form.targets, [client.id]: event.target.checked },
-                        })
-                      }
+                          targets: { ...form.targets, [client.id]: checked },
+                          ccSwitchTargets: {
+                            ...form.ccSwitchTargets,
+                            ...(isCcAgent && !checked ? { [client.id]: false } : {}),
+                          },
+                        });
+                      }}
                       type="checkbox"
                     />
                     <span>{client.label}</span>
@@ -932,15 +940,20 @@ function App() {
                   <label key={agent.id}>
                     <input
                       checked={form.ccSwitchTargets[agent.id]}
-                      onChange={(event) =>
+                      onChange={(event) => {
+                        const checked = event.target.checked;
                         setForm({
                           ...form,
                           ccSwitchTargets: {
                             ...form.ccSwitchTargets,
-                            [agent.id]: event.target.checked,
+                            [agent.id]: checked,
                           },
-                        })
-                      }
+                          targets: {
+                            ...form.targets,
+                            ...(checked ? { [agent.id]: true } : {}),
+                          },
+                        });
+                      }}
                       type="checkbox"
                     />
                     <DatabaseZap size={14} />

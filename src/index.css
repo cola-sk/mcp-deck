@@ -217,7 +217,8 @@ button.metric-card:hover,
 }
 
 .toolbar button,
-.editor-actions button {
+.editor-actions button,
+.editor-title button {
   display: inline-flex;
   min-width: 36px;
   height: 36px;
@@ -236,7 +237,8 @@ button.metric-card:hover,
 }
 
 .toolbar button:hover,
-.editor-actions button:hover {
+.editor-actions button:hover,
+.editor-title button:hover {
   border-color: var(--hairline-strong);
   background: var(--canvas-soft-2);
 }
@@ -480,6 +482,12 @@ button.metric-card:hover,
 
 .editor-head p {
   margin: 0 0 4px;
+}
+
+.editor-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .overview-head {
