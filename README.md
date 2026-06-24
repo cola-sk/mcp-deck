@@ -51,4 +51,5 @@ npm run tauri dev
 - Codex TOML is edited with `toml_edit` to preserve surrounding comments and unrelated settings.
 - Existing files are backed up before writes with a `.mcp-deck.bak` suffix.
 - One-click sync writes all source servers to their target clients. Servers without MCP Deck metadata default to all supported clients.
-- cc-switch synchronization is explicit and writes through a SQLite transaction. One-click sync also updates cc-switch when Codex is a target.
+- cc-switch synchronization is explicit and writes through a SQLite transaction. It updates cc-switch settings, active providers, and the central `mcp_servers` registry table, ensuring configurations are preserved when saving or switching inside CC Switch.
+
