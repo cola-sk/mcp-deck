@@ -1,3 +1,3 @@
 fn main() {
-    mcp_deck_lib::run();
+    loom_lib::run();
 }

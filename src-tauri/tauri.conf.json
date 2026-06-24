@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "MCP Deck",
+  "productName": "Loom",
   "version": "0.1.0",
-  "identifier": "dev.mcpdeck.desktop",
+  "identifier": "dev.loom.desktop",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "MCP Deck",
+        "title": "Loom",
         "width": 1180,
         "height": 760,
         "minWidth": 860,
@@ -26,6 +26,12 @@
   "bundle": {
     "active": true,
     "targets": ["app"],
-    "icon": []
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
   }
 }

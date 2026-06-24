@@ -1,18 +1,18 @@
 import { invoke } from "@tauri-apps/api/core";
 import {
   Check,
-  ClipboardPaste,
   DatabaseZap,
   Eye,
   EyeOff,
   FileCode,
   House,
+  Import,
   Plus,
   RefreshCw,
   Save,
+  Send,
   Server,
   Trash2,
-  UploadCloud,
   X,
 } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
@@ -222,6 +222,45 @@ function parseMcpJsonEntries(text: string, fallbackName: string): ParsedMcpEntry
   return entries;
 }
 
+function AppIcon() {
+  return (
+    <svg width="100%" height="100%" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ borderRadius: "6px", display: "block" }}>
+      <defs>
+        <linearGradient id="bg" x1="160" y1="96" x2="864" y2="928" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#7C3AED"/>
+          <stop offset="0.5" stopColor="#2563EB"/>
+          <stop offset="1" stopColor="#06B6D4"/>
+        </linearGradient>
+
+        <clipPath id="clip">
+          <rect x="64" y="64" width="896" height="896" rx="205"/>
+        </clipPath>
+      </defs>
+
+      {/* vibrant gradient background */}
+      <rect x="64" y="64" width="896" height="896" rx="205" fill="url(#bg)"/>
+
+      <g clipPath="url(#clip)">
+        <rect x="64" y="64" width="896" height="896" fill="url(#bg)"/>
+      </g>
+
+      {/* connections */}
+      <line x1="512" y1="512" x2="512" y2="300" stroke="#FFFFFF" strokeWidth="24" strokeLinecap="round" opacity="0.92"/>
+      <line x1="512" y1="512" x2="695" y2="618" stroke="#FFFFFF" strokeWidth="24" strokeLinecap="round" opacity="0.92"/>
+      <line x1="512" y1="512" x2="329" y2="618" stroke="#FFFFFF" strokeWidth="24" strokeLinecap="round" opacity="0.92"/>
+
+      {/* outer nodes */}
+      <circle cx="512" cy="300" r="70" fill="#FFFFFF"/>
+      <circle cx="695" cy="618" r="70" fill="#FFFFFF"/>
+      <circle cx="329" cy="618" r="70" fill="#FFFFFF"/>
+
+      {/* center hub */}
+      <circle cx="512" cy="512" r="130" fill="#FFFFFF"/>
+      <circle cx="512" cy="512" r="54" fill="#7C3AED"/>
+    </svg>
+  );
+}
+
 function App() {
   const [servers, setServers] = useState<ServerEntry[]>([]);
   const [statuses, setStatuses] = useState<ClientStatus[]>([]);
@@ -416,7 +455,7 @@ function App() {
     }
   }
 
-  async function openRawConfigs() {
+  async function openRawConfigFor(configId: string) {
     setRawConfigsOpen(true);
     setRawConfigsLoading(true);
     setError(null);
@@ -424,7 +463,11 @@ function App() {
     try {
       const configs = await invoke<RawMcpConfig[]>("get_raw_mcp_configs");
       setRawConfigs(configs);
-      setActiveRawConfigId((current) => current ?? configs[0]?.id ?? null);
+      if (configs.some((c) => c.id === configId)) {
+        setActiveRawConfigId(configId);
+      } else {
+        setActiveRawConfigId(configs[0]?.id ?? null);
+      }
     } catch (err) {
       setRawConfigs([]);
       setActiveRawConfigId(null);
@@ -432,6 +475,10 @@ function App() {
     } finally {
       setRawConfigsLoading(false);
     }
+  }
+
+  function openRawConfigs() {
+    void openRawConfigFor("source");
   }
 
   function closeRawConfigs() {
@@ -524,10 +571,10 @@ function App() {
       <section className="sidebar">
         <button className="brand-row" onClick={showOverview} type="button">
           <div className="brand-mark">
-            <Server size={20} />
+            <AppIcon />
           </div>
           <div>
-            <h1>MCP Deck</h1>
+            <h1>Loom</h1>
             <span>Desktop config console</span>
           </div>
         </button>
@@ -541,10 +588,6 @@ function App() {
             <strong>{servers.length}</strong>
             <span>Servers</span>
           </button>
-          <div className="metric-card">
-            <strong>{totalEnabled}</strong>
-            <span>Bindings</span>
-          </div>
           <button
             className={`metric-card ${conflicts ? "warn" : ""} ${showNeedsSyncOnly ? "active" : ""}`}
             onClick={() => setShowNeedsSyncOnly((value) => !value)}
@@ -557,23 +600,45 @@ function App() {
         </div>
 
         <div className="toolbar">
-          <button onClick={newServer} title="New server" type="button">
-            <Plus size={16} />
-          </button>
-          <button onClick={openJsonImport} title="Import JSON" type="button">
-            <ClipboardPaste size={16} />
-          </button>
-          <button onClick={openRawConfigs} title="Raw MCP configs" type="button">
-            <FileCode size={16} />
-          </button>
-          <button onClick={showOverview} title="Overview" type="button">
+          <button
+            disabled={loading || saving}
+            onClick={showOverview}
+            title="Overview"
+            type="button"
+          >
             <House size={16} />
           </button>
-          <button onClick={loadData} title="Refresh" type="button">
-            <RefreshCw size={16} />
+          <button
+            disabled={loading || saving}
+            onClick={newServer}
+            title="New server"
+            type="button"
+          >
+            <Plus size={16} />
           </button>
-          <button onClick={syncAllClients} title="Sync all clients" type="button">
-            <UploadCloud size={16} />
+          <button
+            disabled={loading || saving}
+            onClick={openJsonImport}
+            title="Import JSON"
+            type="button"
+          >
+            <Import size={16} />
+          </button>
+          <button
+            disabled={loading || saving}
+            onClick={syncAllClients}
+            title="Push configs to all clients"
+            type="button"
+          >
+            <Send size={16} className={saving ? "spin" : ""} />
+          </button>
+          <button
+            disabled={loading || saving}
+            onClick={loadData}
+            title="Refresh"
+            type="button"
+          >
+            <RefreshCw size={16} className={loading ? "spin" : ""} />
           </button>
         </div>
 
@@ -612,22 +677,43 @@ function App() {
       </section>
 
       <section className="workspace">
-        <div className="status-strip">
-          {statuses.map((status) => (
-            <div className="status-pill" key={status.client} title={status.path}>
-              <span
-                className={
-                  status.error
-                    ? "status-dot error"
-                    : status.exists
-                      ? "status-dot ok"
-                      : "status-dot"
-                }
-              />
-              <strong>{status.label}</strong>
-              <em>{status.error ? "error" : status.exists ? "ready" : "missing"}</em>
-            </div>
-          ))}
+        <div className="status-bar">
+          <span className="status-bar-label">Target Agents</span>
+          <div className="status-pills">
+            {statuses.map((status) => (
+              <button
+                className="status-pill"
+                key={status.client}
+                onClick={() => void openRawConfigFor(status.client)}
+                title={`Click to view raw config file:\n${status.path}`}
+                type="button"
+              >
+                <span
+                  className={
+                    status.error
+                      ? "status-dot error"
+                      : status.exists
+                        ? "status-dot ok"
+                        : "status-dot"
+                  }
+                />
+                <span className="status-pill-label">{status.label}</span>
+                <span className="status-pill-value">
+                  {status.error ? "error" : status.exists ? "ready" : "missing"}
+                </span>
+              </button>
+            ))}
+            <button
+              className="status-bar-action"
+              disabled={loading || saving}
+              onClick={openRawConfigs}
+              title="View all raw config files"
+              type="button"
+            >
+              <FileCode size={14} />
+              <span>Raw</span>
+            </button>
+          </div>
         </div>
 
         {!editing ? (
@@ -655,17 +741,13 @@ function App() {
             )}
 
             <div className="overview-actions">
-              <button className="primary" disabled={saving} onClick={syncAllClients} type="button">
-                <UploadCloud size={16} />
-                Sync All
+              <button className="primary" disabled={saving || loading} onClick={syncAllClients} type="button">
+                <Send size={16} className={saving ? "spin" : ""} />
+                Push Configs
               </button>
               <button onClick={newServer} type="button">
                 <Plus size={16} />
                 New Server
-              </button>
-              <button onClick={openJsonImport} type="button">
-                <ClipboardPaste size={16} />
-                Import JSON
               </button>
               <button onClick={openRawConfigs} type="button">
                 <FileCode size={16} />
@@ -710,22 +792,6 @@ function App() {
                 type="button"
               >
                 <House size={16} />
-              </button>
-              <button
-                className="ghost"
-                onClick={openJsonImport}
-                title="Import JSON"
-                type="button"
-              >
-                <ClipboardPaste size={16} />
-              </button>
-              <button
-                className="ghost"
-                onClick={openRawConfigs}
-                title="Raw MCP configs"
-                type="button"
-              >
-                <FileCode size={16} />
               </button>
               <button
                 className="ghost"

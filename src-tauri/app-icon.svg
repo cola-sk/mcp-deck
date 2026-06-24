@@ -1,8 +1,34 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="96" fill="#0b151a"/>
-  <rect x="86" y="112" width="340" height="288" rx="34" fill="#15242b" stroke="#6dcaff" stroke-width="18"/>
-  <circle cx="178" cy="204" r="30" fill="#7ee0a5"/>
-  <circle cx="256" cy="204" r="30" fill="#d8a94a"/>
-  <circle cx="334" cy="204" r="30" fill="#6dcaff"/>
-  <path d="M148 304h216M148 352h148" stroke="#edf6fb" stroke-width="24" stroke-linecap="round"/>
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="160" y1="96" x2="864" y2="928" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#7C3AED"/>
+      <stop offset="0.5" stop-color="#2563EB"/>
+      <stop offset="1" stop-color="#06B6D4"/>
+    </linearGradient>
+
+    <clipPath id="clip">
+      <rect x="64" y="64" width="896" height="896" rx="205"/>
+    </clipPath>
+  </defs>
+
+  <!-- vibrant gradient background -->
+  <rect x="64" y="64" width="896" height="896" rx="205" fill="url(#bg)"/>
+
+  <g clip-path="url(#clip)">
+    <rect x="64" y="64" width="896" height="896" fill="url(#bg)"/>
+  </g>
+
+  <!-- connections -->
+  <line x1="512" y1="512" x2="512" y2="300" stroke="#FFFFFF" stroke-width="24" stroke-linecap="round" opacity="0.92"/>
+  <line x1="512" y1="512" x2="695" y2="618" stroke="#FFFFFF" stroke-width="24" stroke-linecap="round" opacity="0.92"/>
+  <line x1="512" y1="512" x2="329" y2="618" stroke="#FFFFFF" stroke-width="24" stroke-linecap="round" opacity="0.92"/>
+
+  <!-- outer nodes -->
+  <circle cx="512" cy="300" r="70" fill="#FFFFFF"/>
+  <circle cx="695" cy="618" r="70" fill="#FFFFFF"/>
+  <circle cx="329" cy="618" r="70" fill="#FFFFFF"/>
+
+  <!-- center hub -->
+  <circle cx="512" cy="512" r="130" fill="#FFFFFF"/>
+  <circle cx="512" cy="512" r="54" fill="#7C3AED"/>
 </svg>

@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Default permissions for MCP Deck",
+  "description": "Default permissions for Loom",
   "windows": ["main"],
   "permissions": ["core:default"]
 }

@@ -68,5 +68,5 @@ pub fn run() {
             sync_codex_cc_switch
         ])
         .run(tauri::generate_context!())
-        .expect("error while running MCP Deck");
+        .expect("error while running Loom");
 }
