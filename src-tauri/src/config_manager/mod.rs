@@ -330,6 +330,32 @@ pub fn remove_mcp_server(name: &str, target_clients: &[ClientId]) -> Result<()> 
         write_client_server(*client, name, None)?;
     }
 
+    // Also disable in cc-switch.db if the table exists
+    let db_path = resolve_path(&[".cc-switch", "cc-switch.db"])?;
+    if db_path.exists() {
+        let mut conn = Connection::open(&db_path).map_err(|source| ConfigError::Sqlite {
+            path: db_path.clone(),
+            source,
+        })?;
+        if table_has_column(&conn, "mcp_servers", "id").unwrap_or(false) {
+            let tx = conn.transaction().map_err(|source| ConfigError::Sqlite {
+                path: db_path.clone(),
+                source,
+            })?;
+            tx.execute(
+                "UPDATE mcp_servers SET enabled_claude = 0, enabled_codex = 0 WHERE id = ?1",
+                params![name],
+            ).map_err(|source| ConfigError::Sqlite {
+                path: db_path.clone(),
+                source,
+            })?;
+            tx.commit().map_err(|source| ConfigError::Sqlite {
+                path: db_path,
+                source,
+            })?;
+        }
+    }
+
     Ok(())
 }
 
@@ -468,12 +494,62 @@ pub fn sync_cc_switch_agents(agents: &[CcSwitchAgent]) -> Result<String> {
         messages.push(result);
     }
 
+    // Sync individual MCP servers to cc-switch's mcp_servers table
+    sync_mcp_servers_to_cc_switch_db(&tx, &db_path)?;
+
     tx.commit().map_err(|source| ConfigError::Sqlite {
         path: db_path,
         source,
     })?;
 
     Ok(format!("cc-switch sync complete: {}", messages.join("; ")))
+}
+
+fn sync_mcp_servers_to_cc_switch_db(conn: &Connection, db_path: &Path) -> Result<()> {
+    if !table_has_column(conn, "mcp_servers", "id").unwrap_or(false) {
+        return Ok(());
+    }
+
+    let source = read_master_servers()?;
+    let state = read_deck_state()?;
+
+    for (name, config) in &source {
+        let cc_switch_targets = state
+            .bindings
+            .get(name)
+            .map(|binding| binding.cc_switch_targets.clone())
+            .unwrap_or_default();
+
+        let enabled_codex = cc_switch_targets.contains(&CcSwitchAgent::Codex) as i32;
+        let enabled_claude = cc_switch_targets.contains(&CcSwitchAgent::Claude) as i32;
+
+        let server_config_value = serde_json::json!({
+            "type": "stdio",
+            "command": config.command,
+            "args": config.args,
+            "env": config.env,
+        });
+        let server_config_text = serde_json::to_string(&server_config_value).map_err(|source| ConfigError::Json {
+            path: db_path.to_path_buf(),
+            source,
+        })?;
+
+        conn.execute(
+            "INSERT INTO mcp_servers (id, name, server_config, enabled_claude, enabled_codex)
+             VALUES (?1, ?2, ?3, ?4, ?5)
+             ON CONFLICT(id) DO UPDATE SET
+               name = excluded.name,
+               server_config = excluded.server_config,
+               enabled_claude = excluded.enabled_claude,
+               enabled_codex = excluded.enabled_codex",
+            params![name, name, server_config_text, enabled_claude, enabled_codex],
+        ).map_err(|source| ConfigError::Sqlite {
+            path: db_path.to_path_buf(),
+            source,
+        })?;
+    }
+
+    Ok(())
 }
 
 fn sync_codex_to_cc_switch(conn: &Connection, db_path: &Path) -> Result<String> {
