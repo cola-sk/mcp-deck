@@ -808,7 +808,7 @@ function App() {
                 title={showSecrets ? "Hide secrets" : "Show secrets"}
                 type="button"
               >
-                {showSecrets ? <EyeOff size={16} /> : <Eye size={16} />}
+                {showSecrets ? <Eye size={16} /> : <EyeOff size={16} />}
               </button>
               <button
                 className="danger"
