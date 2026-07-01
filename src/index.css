@@ -699,6 +699,14 @@ label span {
   font-weight: 400;
 }
 
+.field-hint {
+  margin: 0;
+  color: var(--mute);
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 16px;
+}
+
 input,
 textarea {
   width: 100%;

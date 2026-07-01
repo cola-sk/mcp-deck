@@ -270,6 +270,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showSecrets, setShowSecrets] = useState(false);
+  const [envFocused, setEnvFocused] = useState(false);
   const [showNeedsSyncOnly, setShowNeedsSyncOnly] = useState(false);
   const [jsonImportOpen, setJsonImportOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -318,6 +319,8 @@ function App() {
   function openServer(entry: ServerEntry) {
     setCreating(false);
     setSelectedName(entry.name);
+    setShowSecrets(false);
+    setEnvFocused(false);
     setForm({
       name: entry.name,
       command: entry.config.command,
@@ -344,6 +347,8 @@ function App() {
   function newServer() {
     setCreating(true);
     setSelectedName(null);
+    setShowSecrets(false);
+    setEnvFocused(false);
     setForm(emptyForm);
     setNotice(null);
     setError(null);
@@ -352,6 +357,8 @@ function App() {
   function showOverview() {
     setCreating(false);
     setSelectedName(null);
+    setShowSecrets(false);
+    setEnvFocused(false);
     setForm(emptyForm);
     setDeleteConfirmOpen(false);
     setNotice(null);
@@ -878,11 +885,11 @@ function App() {
                 <label>
                   <span>Env</span>
                   <textarea
-                    className={`env-textarea ${!showSecrets ? "masked" : ""}`}
+                    className={`env-textarea ${!(showSecrets || envFocused) ? "masked" : ""}`}
                     onChange={(event) => setForm({ ...form, envText: event.target.value })}
-                    placeholder="API_KEY=..."
+                    placeholder="API_KEY=...&#10;NPM_CONFIG_REGISTRY=https://npm.ninebot.com/"
                     value={
-                      showSecrets
+                      showSecrets || envFocused
                         ? form.envText
                         : form.envText
                             .split("\n")
@@ -893,8 +900,13 @@ function App() {
                             })
                             .join("\n")
                     }
-                    onFocus={() => setShowSecrets(true)}
+                    onFocus={() => setEnvFocused(true)}
+                    onBlur={() => setEnvFocused(false)}
                   />
+                  <small className="field-hint">
+                    Use KEY=VALUE format, no spaces around &quot;=&quot;, and no quotes around
+                    values.
+                  </small>
                 </label>
               </div>
             </section>
